@@ -4,22 +4,25 @@ import (
 	"log"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/satty9/pocket-tg-bot-go/pkg/repository"
 	"github.com/zhashkevych/go-pocket-sdk"
 )
 
 type Bot struct {
-	bot          *tgbotapi.BotAPI
-	pocketClient *pocket.Client
-	redirectURL  string
+	bot             *tgbotapi.BotAPI
+	pocketClient    *pocket.Client
+	tokenRepository repository.TokenRepositorier
+	redirectURL     string
 }
 
 // внедрение зависимости. Эту поля можно было бы инициализировать в методе "StartBot",
 // а не принимать параметры в этой функции. Так мы не зависим от значений внутри бота
-func NewBot(newBot *tgbotapi.BotAPI, newPocketClient *pocket.Client, newRedirectUrl string) *Bot {
+func NewBot(newBot *tgbotapi.BotAPI, newPocketClient *pocket.Client, newTR repository.TokenRepositorier, newRedirectUrl string) *Bot {
 	return &Bot{
-		bot:          newBot,
-		pocketClient: newPocketClient,
-		redirectURL:  newRedirectUrl,
+		bot:             newBot,
+		pocketClient:    newPocketClient,
+		tokenRepository: newTR,
+		redirectURL:     newRedirectUrl,
 	}
 }
 
@@ -39,7 +42,7 @@ func (b *Bot) InitChannelUpdates() tgbotapi.UpdatesChannel {
 	return b.bot.GetUpdatesChan(u)
 }
 
-// work cycle of bot
+// work cycle of bot. This function block another execute
 func (b *Bot) HandleUpdates(updates tgbotapi.UpdatesChannel) {
 	for update := range updates {
 		if update.Message == nil { // If we not got a message go to next update
@@ -49,13 +52,14 @@ func (b *Bot) HandleUpdates(updates tgbotapi.UpdatesChannel) {
 		if update.Message.IsCommand() {
 			err := b.HandleCommand(update.Message)
 			if err != nil {
-				log.Fatal(err)
+				b.HandleErrors(update.Message.Chat.ID, err)
+
 			}
 			continue
 		}
 		err := b.HandleMessage(update.Message)
 		if err != nil {
-			log.Fatal(err)
+			b.HandleErrors(update.Message.Chat.ID, err)
 		}
 	}
 }

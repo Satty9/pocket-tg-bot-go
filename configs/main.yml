@@ -1,0 +1,15 @@
+db_path: "bot.db"
+
+bot_url: "https://t.me/pocket_eu_bot"
+
+messages:
+  responses:
+    reply_start: "Привет! Чтобы сохранять ссылки в своём Pocket аккаунте, вам нужно дать доступ к этому аккаунту. Для этого, пожалуйста, перейдите по ссылке \n%s"
+    reply_already_authorized: "Вы уже авторизированы и готовы к работе. Присылайте ссылку для сохранения в аккаунт Pocket"
+    reply_url_success_saved: "Ссылка сохранена в Pocket аккаунт"
+    reply_unknown_command: "Мне неизвестна эта команда"
+  errors:
+    err_default: "Произошла неизвестная ошибка"
+    err_url_not_valid: "Ссылка неверна. Проверьте её"
+    err_user_not_authorized: "Вы не авторизированы. Используйте команду /start"
+    err_pocket_response_negative: "Сервис Pocket не принял запрос. Попробуйте позже"
